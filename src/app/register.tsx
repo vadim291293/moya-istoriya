@@ -1,100 +1,236 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useRef, useState } from 'react';
+import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { supabase } from '../lib/supabase';
 
 export default function RegisterScreen() {
   const router = useRouter();
 
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const nameInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
+  const passwordInputRef = useRef<TextInput>(null);
+
+  async function handleRegister() {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanName || !cleanEmail || !password) {
+      Alert.alert(
+        'Заполните данные',
+        'Введите имя, электронную почту и пароль.',
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert(
+        'Слишком короткий пароль',
+        'Пароль должен содержать не менее 6 символов.',
+      );
+      return;
+    }
+
+    Keyboard.dismiss();
+    setLoading(true);
+
+    const { error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        data: {
+          name: cleanName,
+        },
+      },
+    });
+
+    setLoading(false);
+
+    if (error) {
+      Alert.alert(
+        'Не удалось создать аккаунт',
+        error.message,
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Аккаунт создан',
+      'Регистрация прошла успешно.',
+      [
+        {
+          text: 'Продолжить',
+          onPress: () => router.replace('/'),
+        },
+      ],
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.page}>
-
-        <Pressable
-          style={styles.back}
-          onPress={() => router.back()}
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.backText}>‹</Text>
-        </Pressable>
+          <View style={styles.page}>
 
-        <Text style={styles.heart}>♥</Text>
+            <Pressable
+              style={styles.back}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.backText}>‹</Text>
+            </Pressable>
 
-        <Text style={styles.title}>
-          Создадим вашу
-        </Text>
+            <Text style={styles.heart}>♥</Text>
 
-        <Text style={styles.titleAccent}>
-          историю
-        </Text>
-
-        <Text style={styles.subtitle}>
-          Начните создавать семейную книгу
-          воспоминаний вместе
-        </Text>
-
-        <View style={styles.form}>
-
-          <Text style={styles.label}>
-            Ваше имя
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Как вас зовут?"
-            placeholderTextColor="#B9AAA5"
-          />
-
-          <Text style={styles.label}>
-            Электронная почта
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="your@email.com"
-            placeholderTextColor="#B9AAA5"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <Text style={styles.label}>
-            Пароль
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Не менее 6 символов"
-            placeholderTextColor="#B9AAA5"
-            secureTextEntry
-          />
-
-        </View>
-
-        <Pressable style={styles.button}>
-          <Text style={styles.buttonText}>
-            Создать аккаунт
-          </Text>
-
-          <Text style={styles.arrow}>
-            →
-          </Text>
-        </Pressable>
-
-        <View style={styles.loginRow}>
-          <Text style={styles.loginText}>
-            Уже есть аккаунт?
-          </Text>
-
-          <Pressable onPress={() => router.replace('/login')}>
-            <Text style={styles.loginLink}>
-              Войти
+            <Text style={styles.title}>
+              Создадим вашу
             </Text>
-          </Pressable>
-        </View>
 
-        <Text style={styles.footer}>
-          ♥ Только для вашей семьи
-        </Text>
+            <Text style={styles.titleAccent}>
+              историю
+            </Text>
 
-      </View>
+            <Text style={styles.subtitle}>
+              Начните создавать семейную книгу
+              воспоминаний вместе
+            </Text>
+
+            <View style={styles.form}>
+
+              <Text style={styles.label}>
+                Ваше имя
+              </Text>
+
+              <TextInput
+                ref={nameInputRef}
+                style={styles.input}
+                placeholder="Как вас зовут?"
+                placeholderTextColor="#B9AAA5"
+                value={name}
+                onChangeText={setName}
+                returnKeyType="next"
+                onSubmitEditing={() => emailInputRef.current?.focus()}
+                blurOnSubmit={false}
+                autoCapitalize="words"
+              />
+
+              <Text style={styles.label}>
+                Электронная почта
+              </Text>
+
+              <TextInput
+                ref={emailInputRef}
+                style={styles.input}
+                placeholder="your@email.com"
+                placeholderTextColor="#B9AAA5"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+                returnKeyType="next"
+                onSubmitEditing={() => passwordInputRef.current?.focus()}
+                blurOnSubmit={false}
+              />
+
+              <Text style={styles.label}>
+                Пароль
+              </Text>
+
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  ref={passwordInputRef}
+                  style={styles.passwordInput}
+                  placeholder="Не менее 6 символов"
+                  placeholderTextColor="#B9AAA5"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  returnKeyType="done"
+                  onSubmitEditing={Keyboard.dismiss}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                <Pressable
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword((value) => !value)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    showPassword
+                      ? 'Скрыть пароль'
+                      : 'Показать пароль'
+                  }
+                >
+                  <Text style={styles.eye}>
+                    {showPassword ? '🙈' : '👁'}
+                  </Text>
+                </Pressable>
+              </View>
+
+            </View>
+
+            <Pressable
+              style={[
+                styles.button,
+                loading && styles.buttonDisabled,
+              ]}
+              onPress={handleRegister}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? 'Создаём аккаунт...' : 'Создать аккаунт'}
+              </Text>
+
+              {!loading && (
+                <Text style={styles.arrow}>
+                  →
+                </Text>
+              )}
+            </Pressable>
+
+            <View style={styles.loginRow}>
+              <Text style={styles.loginText}>
+                Уже есть аккаунт?
+              </Text>
+
+              <Pressable onPress={() => router.replace('/login')}>
+                <Text style={styles.loginLink}>
+                  Войти
+                </Text>
+              </Pressable>
+            </View>
+
+            <Text style={styles.footer}>
+              ♥ Только для вашей семьи
+            </Text>
+
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -105,10 +241,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F2EC',
   },
 
-  page: {
+  keyboardContainer: {
     flex: 1,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+  },
+
+  page: {
+    flexGrow: 1,
     paddingHorizontal: 28,
     alignItems: 'center',
+    paddingBottom: 16,
   },
 
   back: {
@@ -184,6 +329,40 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
+  passwordContainer: {
+    width: '100%',
+    position: 'relative',
+    marginBottom: 16,
+  },
+
+  passwordInput: {
+    width: '100%',
+    height: 52,
+    borderRadius: 17,
+    backgroundColor: '#FFFDF9',
+    borderWidth: 1,
+    borderColor: '#E4C9C1',
+    paddingLeft: 17,
+    paddingRight: 55,
+    fontSize: 15,
+    color: '#493C38',
+  },
+
+  eyeButton: {
+    position: 'absolute',
+    right: 7,
+    top: 5,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  eye: {
+    fontSize: 20,
+  },
+
   button: {
     width: '100%',
     height: 54,
@@ -193,6 +372,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 7,
     flexDirection: 'row',
+  },
+
+  buttonDisabled: {
+    opacity: 0.7,
   },
 
   buttonText: {
