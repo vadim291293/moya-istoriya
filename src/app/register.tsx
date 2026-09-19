@@ -77,7 +77,7 @@ export default function RegisterScreen() {
       [
         {
           text: 'Продолжить',
-          onPress: () => router.replace('/'),
+          onPress: () => router.replace('/setup'),
         },
       ],
     );
