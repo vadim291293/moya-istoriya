@@ -1,0 +1,7 @@
+{
+  "name": "ai-news-monitor",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test tests/*.test.mjs", "check-feeds": "node scripts/check-feeds.mjs" },
+  "dependencies": { "fast-xml-parser": "5.11.2", "cheerio": "1.2.0" }
+}
