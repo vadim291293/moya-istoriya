@@ -1,6 +1,8 @@
+import { colors } from '../lib/theme';
+import { StoryIcon } from '../components/story-ui';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
     Alert,
     Keyboard,
@@ -14,10 +16,13 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../lib/auth-context';
 import { supabase } from '../lib/supabase';
 
 export default function SetupScreen() {
   const router = useRouter();
+  const { refreshFamily, signOut, session } = useAuth();
+  const submitting = useRef(false);
 
   const [familyName, setFamilyName] = useState('');
   const [childName, setChildName] = useState('');
@@ -28,7 +33,15 @@ export default function SetupScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  async function handleExitSetup() {
+    const error = await signOut();
+    if (error) {
+      Alert.alert('Не удалось выйти', 'Проверьте подключение и попробуйте ещё раз.');
+    }
+  }
+
   async function handleCreateHistory() {
+    if (submitting.current || loading || !session) return;
     const cleanFamilyName = familyName.trim();
     const cleanChildName = childName.trim();
 
@@ -41,6 +54,7 @@ export default function SetupScreen() {
     }
 
     Keyboard.dismiss();
+    submitting.current = true;
     setLoading(true);
 
     const birthDateString = [
@@ -49,34 +63,43 @@ export default function SetupScreen() {
       String(birthDate.getDate()).padStart(2, '0'),
     ].join('-');
 
-    const { data, error } = await supabase.rpc(
-      'create_family_with_child',
-      {
-        p_family_name: cleanFamilyName,
-        p_child_name: cleanChildName,
-        p_birth_date: birthDateString,
-      },
-    );
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert(
-        'Не удалось создать историю',
-        error.message,
+    try {
+      // Recheck membership before any write; a previous request may have committed.
+      const { data: existing, error: membershipError } = await supabase
+        .from('family_members').select('family_id').eq('user_id', session.user.id).limit(1);
+      if (membershipError) throw membershipError;
+      if (existing?.length) {
+        await refreshFamily();
+        return;
+      }
+      const { data, error } = await supabase.rpc(
+        'create_family_with_child',
+        {
+          p_family_name: cleanFamilyName,
+          p_child_name: cleanChildName,
+          p_birth_date: birthDateString,
+        },
       );
-      return;
-    }
 
-    if (!data) {
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('Сервер не вернул данные ребёнка.');
+      }
+
+      await refreshFamily();
+    } catch {
       Alert.alert(
-        'Не удалось создать историю',
-        'Сервер не вернул данные ребёнка.',
+        'Не удалось подтвердить создание',
+        'Проверим, появилась ли семья на сервере. При потере соединения не создавайте историю повторно, пока не проверен результат.',
       );
-      return;
+      await refreshFamily();
+    } finally {
+      submitting.current = false;
+      setLoading(false);
     }
-
-    router.replace('/');
   }
 
   function formatBirthDate(date: Date) {
@@ -115,12 +138,15 @@ export default function SetupScreen() {
 
             <Pressable
               style={styles.back}
-              onPress={() => router.back()}
+              onPress={() => void handleExitSetup()}
+              accessibilityRole="button"
+              accessibilityLabel="Выйти из аккаунта"
+              disabled={loading}
             >
-              <Text style={styles.backText}>‹</Text>
+              <StoryIcon name="close" />
             </Pressable>
 
-            <Text style={styles.heart}>♥</Text>
+            <View style={styles.mark}><StoryIcon name="book" size={30} color={colors.primary} /></View>
 
             <Text style={styles.title}>
               Создадим вашу
@@ -136,6 +162,10 @@ export default function SetupScreen() {
             </Text>
 
             <View style={styles.form}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Принять приглашение" disabled={loading}
+                onPress={() => { if (!submitting.current && !loading && session) router.push('/family/join'); }} style={styles.dateInput}>
+                <Text style={styles.dateText}>Меня пригласили в семью</Text>
+              </Pressable>
 
               <Text style={styles.label}>
                 Ваша семья
@@ -145,7 +175,8 @@ export default function SetupScreen() {
                  ref={familyInputRef}
                     style={styles.input}
                     placeholder="Ивановы"
-                    placeholderTextColor="#B9AAA5"
+                    editable={!loading}
+                    placeholderTextColor={colors.muted}
                     value={familyName}
                     onChangeText={setFamilyName}
                     returnKeyType="next"
@@ -161,7 +192,8 @@ export default function SetupScreen() {
                 ref={childInputRef}
                 style={styles.input}
                 placeholder="Имя ребёнка"
-                placeholderTextColor="#B9AAA5"
+                editable={!loading}
+                placeholderTextColor={colors.muted}
                 value={childName}
                 onChangeText={setChildName}
                 returnKeyType="done"
@@ -179,6 +211,9 @@ export default function SetupScreen() {
                   Keyboard.dismiss();
                   setShowDatePicker(true);
                 }}
+                accessibilityRole="button"
+                accessibilityLabel="Выбрать дату рождения"
+                disabled={loading}
               >
                 <Text style={styles.dateText}>
                   {formatBirthDate(birthDate)}
@@ -212,6 +247,8 @@ export default function SetupScreen() {
               ]}
               onPress={handleCreateHistory}
               disabled={loading}
+              accessibilityRole="button"
+              accessibilityLabel={loading ? 'Создаём историю' : 'Создать семейную историю'}
             >
               <Text style={styles.buttonText}>
                 {loading
@@ -240,7 +277,7 @@ export default function SetupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F2EC',
+    backgroundColor: colors.background,
   },
 
   keyboardContainer: {
@@ -253,9 +290,12 @@ const styles = StyleSheet.create({
 
   page: {
     flexGrow: 1,
-    paddingHorizontal: 28,
-    alignItems: 'center',
-    paddingBottom: 20,
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    alignItems: 'stretch',
+    paddingBottom: 24,
   },
 
   back: {
@@ -263,7 +303,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFFDF9',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 5,
@@ -272,10 +312,11 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 34,
     lineHeight: 38,
-    color: '#8F7069',
+    color: colors.ink,
     marginTop: -4,
   },
 
+  mark: { width: 64, height: 64, borderRadius: 22, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginTop: 24, marginBottom: 16 },
   heart: {
     fontSize: 42,
     color: '#D4777F',
@@ -283,26 +324,26 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 29,
+    fontSize: 32,
     fontWeight: '700',
-    color: '#493C38',
+    color: colors.ink,
     marginTop: 10,
-    textAlign: 'center',
+    textAlign: 'left',
   },
 
   titleAccent: {
-    fontSize: 29,
+    fontSize: 32,
     fontWeight: '700',
-    color: '#B96870',
+    color: colors.primary,
     marginTop: -2,
-    textAlign: 'center',
+    textAlign: 'left',
   },
 
   subtitle: {
     fontSize: 14,
     lineHeight: 21,
-    color: '#8D7D78',
-    textAlign: 'center',
+    color: colors.secondary,
+    textAlign: 'left',
     marginTop: 9,
     maxWidth: 330,
   },
@@ -315,31 +356,31 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#665651',
+    color: colors.ink,
     marginBottom: 7,
     marginLeft: 4,
   },
 
   input: {
     width: '100%',
-    height: 52,
+    minHeight: 56,
     borderRadius: 17,
-    backgroundColor: '#FFFDF9',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E4C9C1',
+    borderColor: colors.border,
     paddingHorizontal: 17,
     fontSize: 15,
-    color: '#493C38',
+    color: colors.ink,
     marginBottom: 16,
   },
 
   dateInput: {
     width: '100%',
-    height: 52,
+    minHeight: 56,
     borderRadius: 17,
-    backgroundColor: '#FFFDF9',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#E4C9C1',
+    borderColor: colors.border,
     paddingHorizontal: 17,
     flexDirection: 'row',
     alignItems: 'center',
@@ -348,7 +389,7 @@ const styles = StyleSheet.create({
 
   dateText: {
     fontSize: 15,
-    color: '#493C38',
+    color: colors.ink,
   },
 
   calendarIcon: {
@@ -363,8 +404,8 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     minHeight: 54,
-    borderRadius: 27,
-    backgroundColor: '#C8757D',
+    borderRadius: 18,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
@@ -380,7 +421,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
-    textAlign: 'center',
+    textAlign: 'left',
   },
 
   arrow: {
@@ -391,10 +432,10 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginTop: 'auto',
+    marginTop: 28,
     marginBottom: 10,
     fontSize: 12,
-    color: '#AA9993',
-    textAlign: 'center',
+    color: colors.secondary,
+    textAlign: 'left',
   },
 });

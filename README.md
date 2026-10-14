@@ -1,56 +1,58 @@
-# Welcome to your Expo app 👋
+# Моя история
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Приватная семейная книга жизни ребёнка. Приложение создаётся на Expo SDK 57, React Native, TypeScript, Expo Router и Supabase.
 
-## Get started
+## Статус снимка — 15 октября 2026
 
-1. Install dependencies
+Это текущая разработка, **не готовый релиз**. В телефонной проверке обнаружена ошибка открытия капсулы Android (`fromCombined`); она ещё не исправлена, хотя существующие локальные тесты проходят. Перед выпуском также нужны рабочая production-почта, самостоятельная установочная сборка, удаление аккаунта и проверенное восстановление архива. Полный повторный аудит: [`docs/READINESS_AUDIT_2026-10-14.md`](docs/READINESS_AUDIT_2026-10-14.md). Секреты `.env.local`, зависимости `node_modules` и локальные сборки в Git не включаются.
 
-   ```bash
-   npm install
-   ```
+## Запуск
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Из корня проекта установите зависимости и запустите Expo:
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Для открытия на телефоне используйте Expo Go той же версии SDK и подключите телефон и компьютер к одной сети. Для проверки TypeScript:
 
-### Other setup steps
+```bash
+npx tsc --noEmit
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Настройка Supabase
 
-## Learn more
+Для клиента нужны `EXPO_PUBLIC_SUPABASE_URL` и `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` в локальном `.env.local`. Публикуемый ключ не заменяет RLS. Никогда не добавляйте `service_role` key в приложение или репозиторий.
 
-To learn more about developing your project with Expo, look at the following resources:
+Схема воспоминаний и приватного хранилища описана в [`supabase/setup/README.md`](supabase/setup/README.md); согласованный SQL-сценарий уже применён к живому проекту. В Data API открыт только необходимый приложению allowlist, а доступ к строкам ограничивается RLS.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Текущие возможности
 
-## Join the community
+- личные капсулы создателя семьи: письмо, фото, видео и голос; отдельный пароль или явный опциональный вход по strong-биометрии, показать/скрыть пароль, страницы списка, редактирование и закрытая корзина; без замка до 18 лет;
+- регистрация, вход, восстановление сессии и выхода;
+- создание семейной истории с ребёнком;
+- добавление следующих детей в существующую семью с защитой от повторной отправки;
+- главный экран семьи и профиль ребёнка;
+- добавление текстового воспоминания, даты события и до пяти фото/видео;
+- восстановление прерванного выбора Android-галереи и полей формы только в исходном аккаунте/семье;
+- дата съёмки фото из доступного EXIF с ручным исправлением;
+- полноэкранный просмотр сохранённых фото по нажатию;
+- галерея без возрастных глав и месячных обложек; общий выбор ребёнка и отдельные Фото/Видео;
+- нижняя навигация «Фото / Видео / Добавить / Записи / Семья»; дневник первых слов, новых умений, смешных фраз и тёплых моментов, фото/видео только для новых умений, необязательный голос;
+- реальные кадры обложек видео с повтором при ошибке, обновление жестом вниз и подгрузка;
+- полноэкранное фото со свайпом/zoom и отдельный видеопросмотр; возраст — подпись, не меню возрастных глав.
 
-Join our community of developers creating universal apps.
+Актуальная проверка 12 октября: 462/462 локальных теста, TypeScript, static render, Android JS/Hermes export. Это не APK и не проверка физического отпечатка/телефона. Подробности входа, сохранности и ограничения: [`docs/CAPSULE_BIOMETRY_VERIFICATION.md`](docs/CAPSULE_BIOMETRY_VERIFICATION.md). После установки native зависимостей перезапустить Metro из основного проекта с `npx expo start -c`. На iOS Expo Go биометрия отключена, используется пароль; для native-конфигурации нужна отдельная сборка. Старые отчёты ниже — исторические проверки, не финальный список функций.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+С отдельного разрешения владельца пройдена 51 проверка живого API на двух тестовых аккаунтах: приватность семей/файлов, запрет чужих записей, идемпотентный setup, выход и повторный вход. Тестовые данные сохранены, существующие записи не менялись. Отчёт: [`docs/LIVE_SUPABASE_VERIFICATION.md`](docs/LIVE_SUPABASE_VERIFICATION.md). Это не проверка нативного интерфейса или входа конкретного владельца.
+
+Проверки без установки новых пакетов: `npm test` и `npm run typecheck`. План ручной проверки: [`docs/SMOKE_TEST.md`](docs/SMOKE_TEST.md). Актуальное состояние и ограничения: [`CURRENT_STATE.md`](CURRENT_STATE.md).
+
+Первая переработка интерфейса, новые фотожесты и границы проверок: [`docs/INTERFACE_REVIEW.md`](docs/INTERFACE_REVIEW.md). Команда статической проверки без реального API: `node scripts/check-interface-render.cjs`.
+
+Укрепление загрузки фото/видео, этапы сохранения и защиты смены аккаунта: [`docs/MEDIA_UPLOAD_VERIFICATION.md`](docs/MEDIA_UPLOAD_VERIFICATION.md). Supabase на этом этапе не менялся; телефонные сценарии ещё требуют проверки.
+
+Полноэкранное видео, остановка при закрытии/фоне и защита поздних событий фото: [`docs/MEDIA_VIEWER_VERIFICATION.md`](docs/MEDIA_VIEWER_VERIFICATION.md).
+
+Восстановление прерванного выбора Android-галереи, поля формы и границы crash recovery: [`docs/PICKER_RECOVERY_VERIFICATION.md`](docs/PICKER_RECOVERY_VERIFICATION.md). Это не автосохранение всех черновиков и не гарантия восстановления при любом завершении процесса.

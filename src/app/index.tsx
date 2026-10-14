@@ -1,135 +1,46 @@
 import { useRouter } from 'expo-router';
-import {
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StoryIcon, StoryIllustration } from '../components/story-ui';
+import { colors } from '../lib/theme';
 
-export default function HomeScreen() {
+export default function WelcomeScreen() {
   const router = useRouter();
-
-  return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require('../../assets/welcome-phone.png')}
-        style={styles.screen}
-        resizeMode="cover"
-      >
-        {/* НАСТОЯЩАЯ кнопка «Создать аккаунт» */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.createButton,
-            pressed && styles.pressed,
-          ]}
-          onPress={() => router.push('/register')}
-        >
-          <Text style={styles.createButtonText}>
-            Создать аккаунт
-          </Text>
-          <Text style={styles.arrow}>→</Text>
+  return <SafeAreaView style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.brandRow}><StoryIcon name="book" color={colors.primary} /><Text style={styles.brand}>Моя история</Text></View>
+      <View style={styles.illustration}><StoryIllustration /></View>
+      <Text style={styles.eyebrow}>МАЛЕНЬКИЕ МОМЕНТЫ. БОЛЬШАЯ ИСТОРИЯ.</Text>
+      <Text accessibilityRole="header" style={styles.title}>Детство, которое{'\n'}всегда с вами</Text>
+      <Text style={styles.subtitle}>Фотографии, первые открытия и ваши слова. Соберите их в семейную книгу жизни.</Text>
+      <View style={styles.actions}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Создать аккаунт" onPress={() => router.push('/register')}
+          style={({ pressed }) => [styles.primary, pressed && styles.pressed]}>
+          <Text style={styles.primaryText}>Начать свою историю</Text><StoryIcon name="chevron" color="#FFFFFF" size={19} />
         </Pressable>
-
-        {/* НАСТОЯЩАЯ кнопка «У меня уже есть аккаунт» */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.loginButton,
-            pressed && styles.pressed,
-          ]}
-          onPress={() => router.push('/login')}
-        >
-          <Text style={styles.loginButtonText}>
-            У меня уже есть аккаунт
-          </Text>
-        </Pressable>
-      </ImageBackground>
-    </View>
-  );
+        <Pressable accessibilityRole="button" accessibilityLabel="У меня уже есть аккаунт" onPress={() => router.push('/login')}
+          style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}><Text style={styles.secondaryText}>У меня уже есть аккаунт</Text></Pressable>
+      </View>
+      <View style={styles.privacy}><StoryIcon name="lock" size={14} color={colors.secondary} /><Text style={styles.privacyText}>Только вы и ваша семья</Text></View>
+    </ScrollView>
+  </SafeAreaView>;
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9F2EC',
-  },
-
-  screen: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-
-  createButton: {
-    position: 'absolute',
-    left: '9%',
-    right: '9%',
-    bottom: '17%',
-    height: 58,
-    borderRadius: 20,
-
-    backgroundColor: '#C98282',
-
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    elevation: 4,
-    shadowColor: '#8E5C5C',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-  },
-
-  createButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '600',
-  },
-
-  arrow: {
-    marginLeft: 12,
-    color: '#FFFFFF',
-    fontSize: 23,
-  },
-
-  loginButton: {
-    position: 'absolute',
-    left: '9%',
-    right: '9%',
-    bottom: '8%',
-    height: 58,
-    borderRadius: 20,
-
-    backgroundColor: 'rgba(255, 253, 250, 0.96)',
-
-    borderWidth: 1.5,
-    borderColor: '#C98282',
-
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    elevation: 3,
-    shadowColor: '#8E5C5C',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.12,
-    shadowRadius: 5,
-  },
-
-  loginButtonText: {
-    color: '#B97878',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  pressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.98 }],
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { flexGrow: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 20, paddingBottom: 20 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
+  brand: { color: colors.ink, fontWeight: '800', fontSize: 19, letterSpacing: -0.5 },
+  illustration: { width: '100%', aspectRatio: 340 / 270, maxHeight: 280, marginTop: 18 },
+  eyebrow: { color: colors.primary, fontSize: 9, lineHeight: 16, letterSpacing: 1.3, fontWeight: '700', textAlign: 'center', marginTop: 8 },
+  title: { color: colors.ink, fontSize: 32, lineHeight: 39, fontWeight: '800', letterSpacing: -1, textAlign: 'center', marginTop: 12 },
+  subtitle: { color: colors.secondary, fontSize: 14, lineHeight: 22, textAlign: 'center', marginTop: 14 },
+  actions: { marginTop: 'auto', paddingTop: 28, gap: 10 },
+  primary: { backgroundColor: colors.primary, borderRadius: 24, minHeight: 58, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  primaryText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', flexShrink: 1, textAlign: 'center' },
+  secondary: { minHeight: 52, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderRadius: 24, padding: 12 },
+  secondaryText: { color: colors.ink, fontWeight: '600', fontSize: 14, textAlign: 'center' },
+  privacy: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 20 },
+  privacyText: { color: colors.secondary, fontSize: 11 },
+  pressed: { opacity: 0.8 },
 });

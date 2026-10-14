@@ -34,7 +34,33 @@
         }
       ],
       "expo-status-bar",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Приложению нужен доступ к выбранным фото и видео, чтобы добавить их в семейную историю.",
+          "cameraPermission": false,
+          "microphonePermission": "Разрешите микрофон, чтобы сохранить голос ребёнка или рассказ близкого в семейном дневнике."
+        }
+      ],
+      "expo-video",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Разрешите микрофон, чтобы сохранить голос ребёнка или рассказ близкого в семейном дневнике.",
+          "recordAudioAndroid": true,
+          "enableBackgroundPlayback": false,
+          "enableBackgroundRecording": false
+        }
+      ],
+      [
+        "expo-secure-store",
+        { "configureAndroidBackup": true, "faceIDPermission": "Разрешите биометрию, чтобы открывать вашу капсулу времени без ввода пароля." }
+      ],
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Разрешите биометрию, чтобы открывать вашу капсулу времени без ввода пароля." }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
