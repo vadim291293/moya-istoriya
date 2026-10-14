@@ -1,56 +1,54 @@
-# Welcome to your Expo app 👋
+# «Моя история» — семейный архив и книга жизни ребёнка
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Личный проект Вадима Смирнова: мобильное приложение, в котором семья сохраняет фотографии, видео, голосовые воспоминания и записи о важных событиях.
 
-## Get started
+**Статус:** прототип в разработке. Готового публичного релиза и APK для самостоятельной установки пока нет.
 
-1. Install dependencies
+## Посмотреть проект
 
-   ```bash
-   npm install
-   ```
+| Вход | Создание книги ребёнка |
+| --- | --- |
+| <img src="docs/portfolio/login-mobile.png" width="260" alt="Экран входа: пустые поля" /> | <img src="docs/portfolio/new-child-mobile.png" width="260" alt="Форма создания книги ребёнка: пустые поля" /> |
 
-2. Start the app
+Настоящие снимки веб-версии в мобильном размере. Формы показаны без данных пользователя. Это иллюстрация интерфейса текущей разработки, а не подтверждение готовности Android-релиза.
 
-   ```bash
-   npx expo start
-   ```
+## Задача продукта
 
-In the output, you'll find options to open the app in a
+Собрать семейные воспоминания в одном месте: отдельная история ребёнка, галерея, дневник и материалы, к которым можно возвращаться через годы.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Над чем работаю
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Вход, регистрация, семья и профили детей.
+- Семейная галерея фотографий и видео.
+- Дневник: первые слова, умения и тёплые моменты.
+- Голосовые воспоминания и приглашения близких.
+- Редактирование и восстановимая корзина.
+- Отдельная «Капсула времени»: письма и материалы ребёнку в будущее; раздел дорабатывается.
 
-## Get a fresh project
+Работающая основа этих сценариев есть в текущей разработке; отдельные мобильные сценарии ещё проверяются. Опубликованный код в репозитории — более ранний снимок проекта, а не полная синхронизация текущей рабочей версии. В этом обновлении добавлены описание и демонстрационные материалы.
 
-When you're ready, run:
+## Технологии и мой вклад
+
+React Native, Expo, TypeScript, Expo Router и Supabase. В текущей разработке используются авторизация, база данных и хранилище файлов.
+
+Развиваю продуктовую идею, уточняю структуру и пользовательские сценарии. С помощью AI-инструментов работаю над интерфейсом, кодом и проверками. Прохожу сценарии как пользователь, уточняю поведение при ошибках и учусь понимать архитектуру и права доступа к семейным материалам.
+
+## Как показать на собеседовании
+
+1. Открыть эту страницу: задача, технологии и снимки интерфейса.
+2. Посмотреть структуру опубликованного кода и [описание архитектуры](ARCHITECTURE.md).
+3. На демонстрации экрана пройти проверенные сценарии рабочей версии: вход, профиль ребёнка, галерея и дневник.
+4. «Капсулу времени» обозначить как дорабатываемую часть. Не представлять прототип как готовый релиз.
+
+## Запуск опубликованного снимка
 
 ```bash
-npm run reset-project
+npm ci
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Для серверных функций нужен собственный тестовый проект и настройки его окружения. Клонирование кода не предоставляет доступ к семейному архиву автора. Совместимость установленного клиента Expo нужно сверять с SDK в `package.json`.
 
-### Other setup steps
+Контакт: [@PythonDeveloperML](https://t.me/PythonDeveloperML).
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Другие проекты: [«Линия»](https://github.com/vadim291293/liniya-studio-demo-bot) · [«Мой AI-редактор»](https://github.com/vadim291293/ai-news-agent-portfolio).
